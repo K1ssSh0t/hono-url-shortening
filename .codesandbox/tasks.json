@@ -4,13 +4,6 @@
 
   // These tasks can be run from CodeSandbox. Running one will open a log in the app.
   "tasks": {
-    "Start": {
-      "name": "Start",
-      "command": "bun --hot run http.ts",
-      "runAtStart": true,
-      "preview": {
-        "port": 3000
-      }
-    }
+   
   }
 }

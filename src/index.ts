@@ -106,7 +106,142 @@ app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
+
+// OpenAPI Specification
+const openAPISpec = {
+  openapi: '3.0.0',
+  info: {
+    title: 'URL Shortener API',
+    description: 'A simple API to shorten URLs and track their statistics.',
+    version: '1.0.0',
+  },
+  servers: [{ url: 'http://localhost:3000', description: 'Local server' }],
+  paths: {
+    '/api/v1/shorten': {
+      post: {
+        summary: 'Shorten a URL',
+        description: 'Takes a long URL and returns a shortened version.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  url: { type: 'string', example: 'https://example.com' },
+                },
+                required: ['url'],
+              },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'URL successfully shortened',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', example: 'abc123' },
+                    shortUrl: { type: 'string', example: 'http://localhost:3000/abc123' },
+                  },
+                },
+              },
+            },
+          },
+          '400': { description: 'Invalid URL provided' },
+        },
+      },
+    },
+    '/api/v1/shorten/{id}': {
+      get: {
+        summary: 'Redirect to original URL',
+        description: 'Uses a shortened URL ID to redirect to the original URL.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            example: 'abc123',
+          },
+        ],
+        responses: {
+          '302': { description: 'Redirects to the original URL' },
+          '404': { description: 'Shortened URL not found' },
+        },
+      },
+      delete: {
+        summary: 'Delete a shortened URL',
+        description: 'Removes a shortened URL from the database.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            example: 'abc123',
+          },
+        ],
+        responses: {
+          '200': { description: 'URL successfully deleted' },
+          '404': { description: 'Shortened URL not found' },
+        },
+      },  
+      put: {
+        summary: 'Update a shortened URL',
+        description: 'Updates a shortened URL in the database.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            example: 'abc123',
+          },
+        ],
+      },
+      
+    },
+      '/api/v1/shorten/{id}/stats': {
+      get: {
+        summary: 'Get URL statistics',
+        description: 'Retrieves usage statistics for a shortened URL.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            example: 'abc123',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Statistics retrieved successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    originalUrl: { type: 'string' },
+                    visitCount: { type: 'integer', example: 42 },
+                  },
+                },
+              },
+            },
+          },
+          '404': { description: 'Shortened URL not found' },
+        },
+      },
+    },
+  },
+};
+
+
 // Use the middleware to serve Swagger UI at /ui
-app.get("/ui", swaggerUI({ url: "/doc" }));
+app.get("/ui", swaggerUI({ spec: openAPISpec, urls: [{ url: "/doc", name: "API Docs" }] }));
 
 export default app;
